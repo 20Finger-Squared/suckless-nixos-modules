@@ -1,0 +1,52 @@
+From 646b741a7d7406739cfd62ee7ef91e0063039e99 Mon Sep 17 00:00:00 2001
+From: 20Finger-Squared <orhylie@gmail.com>
+Date: Fri, 2 Jan 2026 20:16:10 +0000
+Subject: [PATCH] SchemeCommandMode
+
+---
+ dwm.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/dwm.c b/dwm.c
+index 4bfe0c4..6ec7bb3 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -58,7 +58,7 @@
+ 
+ /* enums */
+ enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
+-enum { SchemeNorm, SchemeSel }; /* color schemes */
++enum { SchemeNorm, SchemeSel, SchemeCommandMode }; /* color schemes */
+ enum { ModeCommand, ModeInsert };
+ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
+        NetWMFullscreen, NetActiveWindow, NetWMWindowType,
+@@ -826,7 +826,11 @@ focus(Client *c)
+ 		detachstack(c);
+ 		attachstack(c);
+ 		grabbuttons(c, 1);
+-		XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
++		if (keymode == ModeCommand) {
++		  XSetWindowBorder(dpy, c->win, scheme[SchemeCommandMode][ColBorder].pixel);
++		} else {
++		  XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
++		}
+ 		setfocus(c);
+ 	} else {
+ 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
+@@ -1542,6 +1546,13 @@ setkeymode(const Arg *arg)
+ 	keymode = arg->ui;
+ 	clearcmd(NULL);
+ 	grabkeys();
++	Client *c = selmon->sel;
++	if (!c) return;
++	if (keymode == ModeCommand) {
++	  XSetWindowBorder(dpy, c->win, scheme[SchemeCommandMode][ColBorder].pixel);
++	} else {
++	  XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
++	}
+ }
+ 
+ int
+-- 
+2.50.1
+
