@@ -1,5 +1,5 @@
 # suckless-nixos-modules
-My nixos modules for suckless software.
+My nixos modules for suckless and adjacent software.
 
 # implementation
 ## flakes
