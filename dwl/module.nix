@@ -343,12 +343,12 @@ in
         tagKeys = mkOption {
           type = types.bool;
           default = true;
-          description = ''Whether to use default tag key binds'';
+          description = "Whether to use default tag key binds";
         };
         binds = mkOption {
           type = types.bool;
           default = true;
-          description = ''Whether to use default dwl binds'';
+          description = "Whether to use default dwl binds";
         };
       };
       tagBinds = mkOption {
@@ -363,7 +363,7 @@ in
         );
       };
       binds = mkOption {
-        description = ''Note that Shift changes certain key codes: 2 -> at, etc.'';
+        description = "Note that Shift changes certain key codes: 2 -> at, etc.";
         type = types.listOf keybind;
         default = [ ];
       };
