@@ -135,7 +135,7 @@ let
       argument = "{0}";
     }
   ];
-  cfg = config.programs.dwm;
+  cfg = config.services.xserver.windowManager.dwm.config;
   boolToInt = x: if x then "1" else "0";
 in
 /* c */ ''

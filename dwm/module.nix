@@ -6,7 +6,7 @@
 }:
 let
   inherit (lib) mkOption types;
-  cfg = config.programs.dwm;
+  cfg = config.services.xserver.windowManager.dwm.config;
 
   file = pkgs.writeText "config.c" (
     (import ./file.nix) {
@@ -16,7 +16,8 @@ let
   );
 in
 {
-  options.programs.dwm = {
+
+  options.services.xserver.windowManager.dwm.config = {
     enable = lib.mkEnableOption "dwm.";
     package = lib.mkPackageOption pkgs "dwm" { };
     finalPackage = mkOption {
