@@ -16,7 +16,8 @@ let
   );
 in
 {
-  options.programs.dwm = {
+
+  options.services.xserver.windowManager.dwm.config = {
     enable = lib.mkEnableOption "dwm.";
     package = lib.mkPackageOption pkgs "dwm" { };
     finalPackage = mkOption {
