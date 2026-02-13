@@ -225,7 +225,7 @@ in
       },
 
       ${
-        # create tage keys bindings
+        # create tag keys bindings
         concatMapStringsSep "\n        " (
           tag: "TAGKEYS(${tag.key}, ${toString tag.tag})"
         ) cfg.tagKeys.definitions
