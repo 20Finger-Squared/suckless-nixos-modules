@@ -1,4 +1,4 @@
-{ lib }:
+{ lib, ... }:
 let
   inherit (lib) mkOption types literalExpression;
   commmonVariables = (import ../commmon-variables.nix);

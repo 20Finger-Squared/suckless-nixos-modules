@@ -1,8 +1,8 @@
-{ lib }:
+{ lib, config, ... }:
 let
-  inherit (lib) mkOption types;
-  commonVariables = import ../common-variables.nix;
-  modifierType = commonVariables.modifier;
+  inherit (lib) mkOption types literalExpression;
+  commonVariables = (import ../common-variables.nix) { inherit lib config; };
+  modifierType = commonVariables.modifierType;
 in
 {
   options.services.xserver.windowManager.dwm.config = {

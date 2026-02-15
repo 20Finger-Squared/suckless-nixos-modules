@@ -142,8 +142,8 @@ let
       argument = "{0}";
     }
   ];
-  common-variables = import ./common-variables.nix;
-  cfg = common-variables.cfg;
+  commonVariables = (import ./common-variables.nix) { inherit lib config; };
+  cfg = commonVariables.cfg;
   boolToString = x: if x then "1" else "0";
   modToString = modifier: if (modifier != null) then (toString modifier) else "MODIFIER";
 in
@@ -237,6 +237,17 @@ in
         # create tag keys bindings
         concatMapStrings (tag: "TAGKEYS(${tag.key}, ${toString tag.tag})") cfg.tagKeys.definitions
       },
+      ${
+        # create default key bindings before user defined bindings
+        concatMapStringsSep "," (
+          key:
+          let
+            keySequenceBinds = concatMapStringsSep "," (
+              key: "{${modToString key.modifier}, ${key.key}, ${key.function}, ${key.argument}}"
+            ) (key.keys);
+          in
+          "{${modToString key.activationKey.modifier}, ${key.activationKey.key}, keypress_other, {.v=(Key[])${keySequenceBinds}}"
+        ) (cfg.patches.keysequence)
       }
   };
 

@@ -1,9 +1,9 @@
-{ lib }:
+{ lib, ... }:
 let
   inherit (lib) mkOption types literalExpression;
 in
 {
-  layout = {
+  options.services.xserver.windowManager.dwm.config.layout = {
     mfact = mkOption {
       description = "Factor of master area size [0.05..0.95].";
       type = types.float;

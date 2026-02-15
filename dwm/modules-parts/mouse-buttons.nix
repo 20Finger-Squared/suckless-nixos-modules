@@ -1,11 +1,11 @@
-{ lib }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption types;
-  commonVariables = import ../common-variables.nix;
-  modifierType = commonVariables.modifier;
+  commonVariables = (import ../common-variables.nix) { inherit lib config; };
+  modifierType = commonVariables.modifierType;
 in
 {
-  buttons = mkOption {
+  options.services.xserver.windowManager.dwm.config.buttons = mkOption {
     description = "The function to run when a mouse key is pressed.";
     type = types.listOf (
       types.submodule {
