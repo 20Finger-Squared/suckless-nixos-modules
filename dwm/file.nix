@@ -1,10 +1,11 @@
 { config, lib }:
 let
   inherit (lib)
+    mkIf
     zipListsWith
     optionalString
     optionals
-    concatMapStrings
+    concatStringsSep
     concatMapStringsSep
     ;
   defaultKeys = [
@@ -141,112 +142,121 @@ let
       argument = "{0}";
     }
   ];
-  cfg = config.services.xserver.windowManager.dwm.config;
+  commonVariables = (import ./common-variables.nix) { inherit lib config; };
+  cfg = commonVariables.cfg.config;
   boolToString = x: if x then "1" else "0";
   modToString = modifier: if (modifier != null) then (toString modifier) else "MODIFIER";
 in
 /* c */ ''
-  ${cfg.file.prepend}
-  static const unsigned int borderpx = ${toString cfg.borderpx};
-  static const unsigned int snap     = ${toString cfg.snap};
-  static const int showbar           = ${boolToString cfg.showBar};
-  static const int topbar            = ${boolToString cfg.topBar};
-  static const char *fonts[]         = { "${cfg.font.name}:size=${toString cfg.font.size}" };
-  static const char *colors[][3] = {
-  ${concatMapStringsSep "," (
-    scheme: ''[${scheme.name}]={"${scheme.fg}", "${scheme.bg}", "${scheme.border}"}''
-  ) cfg.colors}
-  };
+   ${cfg.file.prepend}
+   static const unsigned int borderpx = ${toString cfg.borderpx};
+   static const unsigned int snap     = ${toString cfg.snap};
+   static const int showbar           = ${boolToString cfg.showBar};
+   static const int topbar            = ${boolToString cfg.topBar};
+   static const char *fonts[]         = { "${cfg.font.name}:size=${toString cfg.font.size}" };
+   static const char *colors[][3] = {
+   ${concatMapStringsSep "," (
+     scheme: ''[${scheme.name}]={"${scheme.fg}", "${scheme.bg}", "${scheme.border}"}''
+   ) cfg.colors}
+   };
 
-  static const char *tags[] = { ${concatMapStringsSep ", " (tag: ''"${toString tag}"'') cfg.tags} };
+   static const char *tags[] = { ${concatMapStringsSep ", " (tag: ''"${toString tag}"'') cfg.tags} };
 
-  static const Rule rules[] = {
-  ${
-    let
-      valueToString = val: if val != null then ''"${toString val}"'' else "NULL";
-    in
-    concatMapStringsSep ", " (rule: ''
-      {
-      "${rule.class}", ${valueToString rule.instance}, ${valueToString rule.title}, ${
-        if (rule.tag != null) then "1<<${toString (rule.tag - 1)}" else "0"
-      }, ${boolToString rule.isFloating}, ${toString rule.monitor}
-      }
-    '') cfg.rules
-  }
-  };
+   static const Rule rules[] = {
+   ${
+     let
+       valueToString = val: if val != null then ''"${toString val}"'' else "NULL";
+     in
+     concatMapStringsSep ", " (rule: ''
+       {
+       "${rule.class}", ${valueToString rule.instance}, ${valueToString rule.title}, ${
+         if (rule.tag != null) then "1<<${toString (rule.tag - 1)}" else "0"
+       }, ${boolToString rule.isFloating}, ${toString rule.monitor}
+       }
+     '') cfg.rules
+   }
+   };
 
-  static const float mfact        = ${toString cfg.layout.mfact};
-  static const int nmaster        = ${toString cfg.layout.nmaster};
-  static const int resizehints    = ${boolToString cfg.layout.resizehints};
-  static const int lockfullscreen = ${boolToString cfg.layout.lockfullscreen};
+   static const float mfact        = ${toString cfg.layout.mfact};
+   static const int nmaster        = ${toString cfg.layout.nmaster};
+   static const int resizehints    = ${boolToString cfg.layout.resizehints};
+   static const int lockfullscreen = ${boolToString cfg.layout.lockfullscreen};
 
-  static const Layout layouts[] = {
-  ${concatMapStringsSep ",\n " (
-    layout: ''{"${layout.symbol}", ${layout.arrangeFunction}}''
-  ) cfg.layout.layouts}
-  };
+   static const Layout layouts[] = {
+   ${concatMapStringsSep ",\n " (
+     layout: ''{"${layout.symbol}", ${layout.arrangeFunction}}''
+   ) cfg.layout.layouts}
+   };
 
-  #define MODKEY ${cfg.modifier}
-  #define TAGKEYS(KEY, TAG) \
-      {${cfg.tagKeys.modifiers.viewOnlyThisTag},       KEY, view,       {.ui = 1 << TAG} }, \
-      {${cfg.tagKeys.modifiers.toggleThisTagInView},   KEY, toggleview, {.ui = 1 << TAG} }, \
-      {${cfg.tagKeys.modifiers.moveWindowToThisTag},   KEY, tag,        {.ui = 1 << TAG} }, \
-      {${cfg.tagKeys.modifiers.toggleWindowOnThisTag}, KEY, toggletag,  {.ui = 1 << TAG} },
+   #define MODKEY ${cfg.modifier}
+   #define TAGKEYS(KEY, TAG) \
+       {${cfg.tagKeys.modifiers.viewOnlyThisTag},       KEY, view,       {.ui = 1 << TAG} }, \
+       {${cfg.tagKeys.modifiers.toggleThisTagInView},   KEY, toggleview, {.ui = 1 << TAG} }, \
+       {${cfg.tagKeys.modifiers.moveWindowToThisTag},   KEY, tag,        {.ui = 1 << TAG} }, \
+       {${cfg.tagKeys.modifiers.toggleWindowOnThisTag}, KEY, toggletag,  {.ui = 1 << TAG} },
 
-  #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
+   #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
-  static char dmenumon[2] = "0";
-  ${
-    let
-      createAppCmd = attrSet: ''
-        { "${attrSet.appCmd}",
-            ${optionalString (attrSet.appArgs != [ ] && attrSet.appArgs != null) (
-              concatMapStringsSep " " (
-                arg: ''"${toString arg.flag}"${optionalString (arg.argument != null) ", ${arg.argument}"},''
-              ) attrSet.appArgs
-            )}
-            NULL };'';
-    in
-    concatMapStrings (
-      zipListsWith (keys: name: ''static const char *${name}[] = ${createAppCmd keys}'')
-        [ cfg.appLauncher cfg.terminal ]
-        [ "dmenucmd" "termcmd" ]
-    )
-  }
+   static char dmenumon[2] = "0";
+   ${concatStringsSep "" (
+     zipListsWith (keys: name: ''
+       static const char *${name}[] = {
+         "${keys.appCmd}",
+         ${
+           optionalString (keys.appArgs != [ ] && keys.appArgs != null) (
+             concatMapStringsSep ", " (
+               arg: ''"${toString arg.flag}"${optionalString (arg.argument != null) ", ${arg.argument}"}''
+             ) keys.appArgs
+             + ", "
+           )
+         }NULL
+       };
+     '') [ cfg.appLauncher cfg.terminal ] [ "dmenucmd" "termcmd" ]
+   )}
+   static const Key keys[] = {
+   ${
+     let
+       # generate keybindings for the terminal and app launcher
+       appKeys = zipListsWith (key: cmd: {
+         modifier = modToString key.modifier;
+         key = key.launchKey;
+         function = "spawn";
+         argument = "{.v=${cmd}}";
+       }) [ cfg.terminal cfg.appLauncher ] [ "termcmd" "dmenucmd" ];
+     in
+     # create default key bindings before user defined bindings
+     concatMapStringsSep ",\n" (
+       key: "{${modToString key.modifier}, ${key.key}, ${key.function}, ${key.argument}}"
+     ) (appKeys ++ (optionals (cfg.keys.useDefault) defaultKeys) ++ cfg.keys.bindings)
+   },
+   ${
+     # create tag keys bindings
+     concatMapStringsSep "\n" (tag: "TAGKEYS(${tag.key}, ${toString tag.tag})") cfg.tagKeys.definitions
+   }
+   ${
+     # create default key bindings before user defined bindings
+     optionalString (cfg.patches.keysequence.enable) (
+       concatMapStringsSep ",\n" (
+         key:
+         let
+           keySequenceBinds = concatMapStringsSep ", " (
+             k: "{${modToString k.modifier}, ${k.key}, ${k.function}, ${k.argument}}"
+           ) key.bindings;
+         in
+         "{${modToString key.activationKey.modifier}, ${key.activationKey.key}, keypress_other, {.v = (Key[]){${keySequenceBinds}, {0}}"
+       ) cfg.patches.keysequence.keys
+     )
+   }
+    ${optionalString cfg.patches.keysequence.enable "{0}"}
+   };
+  Button buttons[] = {
+          ${
+            concatMapStringsSep "," (
+              button:
+              "{${button.clickArea},${button.modifier},${button.button},${button.function},${button.argument}}"
+            ) cfg.buttons
+          },
+      };
 
-  static const Key keys[] = {
-      {
-      ${
-        let
-          # generate keybindings for the terminal and app launcher
-          appKeys = zipListsWith (key: cmd: {
-            modifier = modToString key.modifier;
-            key = key.launchKey;
-            function = "spawn";
-            argument = "{.v=${cmd}}";
-          }) [ cfg.terminal cfg.appLauncher ] [ "termcmd" "dmenucmd" ];
-        in
-        # create default key bindings before user defined bindings
-        concatMapStringsSep "," (
-          key: "{${modToString key.modifier}, ${key.key}, ${key.function}, ${key.argument} }"
-        ) (appKeys ++ (optionals (cfg.key.useDefault) defaultKeys) ++ cfg.key.keys)
-      },
-      ${
-        # create tag keys bindings
-        concatMapStringsSep "\n        " (
-          tag: "TAGKEYS(${tag.key}, ${toString tag.tag})"
-        ) cfg.tagKeys.definitions
-      }
-  };
-
-  static const Button buttons[] = {
-      ${
-        concatMapStringsSep ",\n        " (
-          button:
-          "{${button.clickArea},${button.modifier},${button.button},${button.function},${button.argument}}"
-        ) cfg.buttons
-      },
-  };
-
-  ${cfg.file.append}
+      ${cfg.file.append}
 ''
