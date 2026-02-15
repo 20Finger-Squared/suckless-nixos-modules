@@ -1,6 +1,7 @@
 { config, lib }:
 let
   inherit (lib)
+    mkIf
     zipListsWith
     optionalString
     optionals
@@ -141,7 +142,8 @@ let
       argument = "{0}";
     }
   ];
-  cfg = config.services.xserver.windowManager.dwm.config;
+  common-variables = import ./common-variables.nix;
+  cfg = common-variables.cfg;
   boolToString = x: if x then "1" else "0";
   modToString = modifier: if (modifier != null) then (toString modifier) else "MODIFIER";
 in
@@ -233,15 +235,14 @@ in
       },
       ${
         # create tag keys bindings
-        concatMapStringsSep "\n        " (
-          tag: "TAGKEYS(${tag.key}, ${toString tag.tag})"
-        ) cfg.tagKeys.definitions
+        concatMapStrings (tag: "TAGKEYS(${tag.key}, ${toString tag.tag})") cfg.tagKeys.definitions
+      },
       }
   };
 
   static const Button buttons[] = {
       ${
-        concatMapStringsSep ",\n        " (
+        concatMapStringsSep "," (
           button:
           "{${button.clickArea},${button.modifier},${button.button},${button.function},${button.argument}}"
         ) cfg.buttons
