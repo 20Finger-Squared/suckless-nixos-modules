@@ -1,7 +1,7 @@
 {
   imports = [
     ./dmenu/module.nix
-    ./dwm/module.nix
+    ./dwm
     ./st/module.nix
   ];
 }
