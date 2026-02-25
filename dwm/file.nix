@@ -233,22 +233,7 @@ in
      # create tag keys bindings
      concatMapStringsSep "\n" (tag: "TAGKEYS(${tag.key}, ${toString tag.tag})") cfg.tagKeys.definitions
    }
-   ${
-     # create default key bindings before user defined bindings
-     optionalString (cfg.patches.keysequence.enable) (
-       concatMapStringsSep ",\n" (
-         key:
-         let
-           keySequenceBinds = concatMapStringsSep ", " (
-             k: "{${modToString k.modifier}, ${k.key}, ${k.function}, ${k.argument}}"
-           ) key.bindings;
-         in
-         "{${modToString key.activationKey.modifier}, ${key.activationKey.key}, keypress_other, {.v = (Key[]){${keySequenceBinds}, {0}}"
-       ) cfg.patches.keysequence.keys
-     )
-   }
-    ${optionalString cfg.patches.keysequence.enable "{0}"}
-   };
+  };
   Button buttons[] = {
           ${
             concatMapStringsSep "," (

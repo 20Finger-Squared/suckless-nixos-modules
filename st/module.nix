@@ -4,12 +4,14 @@
   config,
   ...
 }:
-with lib;
 let
-  types = lib.types // {
-    hexColor = types.strMatching "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$";
-    modifier = types.strMatching "^(MODKEY|Mod[1-5]Mask|ShiftMask|ControlMask|LockMask|XK_SWITCH_MOD)(\\|(MODKEY|Mod[1-5]Mask|ShiftMask|ControlMask|LockMask|XK_SWITCH_MOD))*$";
-  };
+  inherit (lib)
+    literalExpression
+    mkEnableOption
+    mkOption
+    types
+    mkIf
+    ;
 
   file = pkgs.writeText "config.h" (
     import ./file.nix {
@@ -34,8 +36,8 @@ in
 
     shell = mkOption {
       type = types.str;
-      default = "${pkgs.bash}/bin/sh";
-      example = "${pkgs.tmux}/bin/sh";
+      default = "${pkgs.bash}/bin/bash";
+      example = literalExpression "${pkgs.tmux}/bin/tmux";
       description = "The cmd initially executed on start-up";
     };
 
@@ -66,7 +68,7 @@ in
       type = types.int;
       default = 8;
       example = 2;
-      description = "To how many spaces tabs are expanded to";
+      description = "How many spaces tabs are expanded to";
     };
 
     terminalName = mkOption {
@@ -224,7 +226,7 @@ in
               description = "Selection mask name (e.g., SEL_RECTANGULAR)";
             };
             value = mkOption {
-              type = types.modifier;
+              type = types.str;
               description = "Modifier mask value";
             };
           };
@@ -241,21 +243,21 @@ in
 
     modifier = {
       ignoreMod = mkOption {
-        type = types.modifier;
+        type = types.str;
         default = "Mod2Mask|XK_SWITCH_MOD";
       };
       termMod = mkOption {
-        type = types.modifier;
+        type = types.str;
         default = "ControlMask|ShiftMask";
         example = "Mod4Mask";
       };
       modkey = mkOption {
-        type = types.modifier;
+        type = types.str;
         default = "Mod1Mask";
         example = "ShiftMask";
       };
       forceMouse = mkOption {
-        type = types.modifier;
+        type = types.str;
         default = "ShiftMask";
         example = "Mod1Mask";
       };
@@ -316,7 +318,7 @@ in
           types.submodule {
             options = {
               modifier = mkOption {
-                type = types.modifier;
+                type = types.str;
                 default = "XK_ANY_MOD";
                 example = "TERMMOD";
               };
@@ -358,7 +360,7 @@ in
                 description = "X11 keysym (e.g., XK_KP_Home)";
               };
               mask = mkOption {
-                type = types.modifier;
+                type = types.str;
                 description = "Modifier mask";
               };
               string = mkOption {

@@ -29,7 +29,6 @@ in
 {
 
   imports = [
-    ./modules-parts/patches/keysequence
     ./modules-parts/apps.nix
     ./modules-parts/colors.nix
     ./modules-parts/keys.nix
@@ -53,9 +52,6 @@ in
       default =
         let
           finalPackage = cfg.package.overrideAttrs (oldAttrs: {
-            patches = (oldAttrs.patches or [ ]) ++ [
-              (optional (cfg.config.patches.keysequence.enable) ./patch-files/keysequence.patch)
-            ];
             postPatch = "cp ${file} config.h; cp ${file} config.def.h";
           });
         in
