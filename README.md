@@ -1,5 +1,6 @@
 # suckless-nixos-modules
 My nixos modules for suckless and adjacent software.
+And a package for the dwm-script.
 
 # implementation
 ## flakes
