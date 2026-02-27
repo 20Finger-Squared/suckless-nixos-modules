@@ -3,7 +3,7 @@
   imports = [
     ./dmenu/module.nix
     ./dwm
-    ./st/module.nix
+    ./st
   ];
   nixpkgs.overlays = [
     (final: prev: {
