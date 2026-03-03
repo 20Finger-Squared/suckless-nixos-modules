@@ -10,6 +10,7 @@ in
       description = "The workspace numbers or 'tags'.";
       type = types.listOf types.int;
       default = [
+        0
         1
         2
         3
@@ -18,7 +19,6 @@ in
         6
         7
         8
-        9
       ];
       example = [
         1
