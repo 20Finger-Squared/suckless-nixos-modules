@@ -170,7 +170,7 @@ in
      concatMapStringsSep ", " (rule: ''
        {
        "${rule.class}", ${valueToString rule.instance}, ${valueToString rule.title}, ${
-         if (rule.tag != null) then "1<<${toString (rule.tag - 1)}" else "0"
+         if (rule.tag != null) then "1<<${toString (rule.tag)}" else "0"
        }, ${boolToString rule.isFloating}, ${toString rule.monitor}
        }
      '') cfg.rules
