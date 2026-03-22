@@ -42,23 +42,19 @@ in
   options.services.xserver.windowManager.dwm.config = {
     enable = mkEnableOption "configuration of dwm in Nix, toggleable as this compiles on your machine";
     finalPackage = mkOption {
-      type = types.package;
-      readOnly = true;
+      description = ''
+        The final dwm package, with the config applied.
+      '';
       defaultText = literalExpression ''
         cfg.package.overrideAttrs (oldAttrs: {
           postPatch = "cp ''${file} config.h; cp ''${file} config.def.h";
         })
       '';
+      type = types.package;
       default =
-        let
-          finalPackage = cfg.package.overrideAttrs (oldAttrs: {
-            postPatch = "cp ${file} config.h; cp ${file} config.def.h";
-          });
-        in
-        finalPackage;
-      description = ''
-        The final dwm package, with the config applied.
-      '';
+          cfg.package.overrideAttrs
+          (_: { postPatch = "cp ${file} config.h; cp ${file} config.def.h"; });
+      readOnly = true;
     };
 
     showBar = mkOption {
