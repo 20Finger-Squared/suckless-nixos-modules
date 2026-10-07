@@ -1,4 +1,6 @@
 # suckless-nixos-modules
+no longer updating this repo. feel free to take the code if you wish. 
+
 My nixos modules for suckless and adjacent software.
 And a package for the dwm-script.
 
